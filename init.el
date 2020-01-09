@@ -22,12 +22,13 @@
 ;; Load path
 ;;-----------------------------------------------------------------------------
 (let ((my-site-lisp (expand-file-name "~/.emacs.d/site-lisp")))
-  (add-to-list 'load-path my-site-lisp)
-  (when (fboundp 'normal-top-level-add-subdirs-to-load-path)
-    (cd my-site-lisp)
-    (normal-top-level-add-subdirs-to-load-path)
-    (cd "~")
-    (byte-recompile-directory my-site-lisp)))
+  (when (file-directory-p my-site-lisp)
+    (add-to-list 'load-path my-site-lisp)
+    (when (fboundp 'normal-top-level-add-subdirs-to-load-path)
+      (cd my-site-lisp)
+      (normal-top-level-add-subdirs-to-load-path)
+      (cd "~")
+      (byte-recompile-directory my-site-lisp))))
 
 ;;-----------------------------------------------------------------------------
 ;; General settings
@@ -43,7 +44,7 @@
 (setq-default show-trailing-whitespace t)
 
 (menu-bar-mode 0)
-(tool-bar-mode 0)
+(if (fboundp 'tool-bar-mode) (tool-bar-mode 0))
 (line-number-mode 1)
 (column-number-mode 1)
 
@@ -75,8 +76,8 @@
 (add-hook 'c-mode-common-hook
           (lambda ()
             (c-set-style "K&R")
-            (setq indent-tabs-mode nil)
-            (setq c-basic-offset tab-width)
+            (setq indent-tabs-mode nil
+                  c-basic-offset tab-width)
             (c-set-offset 'arglist-intro tab-width)
             (c-set-offset 'arglist-close 0)
             (c-set-offset 'inline-open 0)
@@ -88,7 +89,6 @@
             (c-set-offset 'innamespace tab-width)))
 
 (add-to-list 'auto-mode-alist '("\\.\\(C\\|c\\|cc\\|cpp\\|cxx\\|e\\|h\\|hh\\|hpp\\|hxx\\)$" . c++-mode))
-
 (defun etolisp-c++-mode ()
   "C++ mode with adjusted defaults for use with the EtoLisp development."
   (interactive)
@@ -111,52 +111,26 @@
 ;; Shell Script
 ;;-----------------------------------------------------------------------------
 (add-hook 'sh-mode-hook
-          (lambda () (setq sh-basic-offset 2 sh-indentation 2)))
-
-;;-----------------------------------------------------------------------------
-;; C#
-;;-----------------------------------------------------------------------------
-(autoload 'csharp-mode "csharp-mode")
-(add-hook 'css-mode-hook
           (lambda ()
-                                        ;(electric-pair-local-mode 1)
-            ))
-(add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode))
+            (setq sh-basic-offset 2
+                  sh-indentation 2)))
 
 ;;-----------------------------------------------------------------------------
 ;; CSS
 ;;-----------------------------------------------------------------------------
-(autoload 'css-mode "css-mode")
-(add-hook 'css-mode-hook
+(add-to-list 'auto-mode-alist '("\\.css\\'" . scss-mode))
+(add-hook 'scss-mode-hook
           (lambda ()
-            (setq cssm-indent-level 2)
-            (setq cssm-indent-function #'cssm-c-style-indenter)))
-(add-to-list 'auto-mode-alist '("\\.css$" . css-mode))
-
-;;-----------------------------------------------------------------------------
-;; PHP
-;;-----------------------------------------------------------------------------
-(autoload 'php-mode "php-mode" "Mode for editing PHP source files" t)
-(add-hook 'php-mode-user-hook 'turn-on-font-lock)
-(add-to-list 'auto-mode-alist '("\\.php$" . php-mode))
+            (setq css-indent-offset 2)))
 
 ;;-----------------------------------------------------------------------------
 ;; JavaScript
 ;;-----------------------------------------------------------------------------
-(autoload 'javascript-mode "JavaScript mode" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . javascript-mode))
 (add-hook 'js-mode-hook (lambda () (setq js-indent-level 2)))
-
-;;-----------------------------------------------------------------------------
-;; YAML
-;;-----------------------------------------------------------------------------
-(autoload 'yaml-mode "yaml-mode" nil t)
-(add-to-list 'auto-mode-alist '("\\.yaml$" . yaml-mode))
 
 ;;-----------------------------------------------------------------------------
 ;; XML
 ;;-----------------------------------------------------------------------------
-(autoload 'xml-mode "xml-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.\\(xml\\|cfx\\|cdx\\)$" . xml-mode))
 (add-to-list 'auto-mode-alist '("\\(cdx\\|cfx\\|qax\\|enx\\)$" . xml-mode))
 
@@ -166,12 +140,6 @@
 (autoload 'ruby-mode "ruby-mode" "Mode for editing ruby source files" t)
 (add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.\\(rb\\|rbw\\|gemspec\\)$" . ruby-mode))
-
-;;-----------------------------------------------------------------------------
-;; Go
-;;-----------------------------------------------------------------------------
-(autoload 'go-mode "go-mode" "Mode for editing Go source files" t)
-(add-to-list 'auto-mode-alist '("\\.go$" . go-mode))
 
 ;;----------------------------------------------------------------------------
 ;; Ispell
@@ -200,7 +168,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (php-mode go-mode csharp-mode yaml-mode auto-complete)))
+    (scss-mode php-mode go-mode csharp-mode yaml-mode auto-complete)))
  '(safe-local-variable-values (quote ((encoding . utf-8)))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
