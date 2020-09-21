@@ -15,8 +15,14 @@
 ;; - php-mode
 ;; - yaml-mode
 ;;-----------------------------------------------------------------------------
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
+;;-----------------------------------------------------------------------------
+;; org-mode
+;;-----------------------------------------------------------------------------
+(setq org-agenda-files '("~/todo.org"))
+(setq org-log-done 'time)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 ;;-----------------------------------------------------------------------------
 ;; Load path
@@ -58,7 +64,9 @@
 ;; Window system specific settings
 ;;-----------------------------------------------------------------------------
 (when window-system
-  (setq initial-frame-alist        '((top . 0) (left . 0) (width . 164) (height . 56)))
+  (global-unset-key (kbd "C-z")) ; I don't like accidentally minimizing the window by mistype; so let it disabled.
+  (setq initial-frame-alist
+        '((top . 0) (left . 0) (width . 164) (height . 56)))
   (set-background-color "#1E1E1E")
   (set-foreground-color "#D4D4D4")
   (set-cursor-color "white")
@@ -98,12 +106,12 @@
           c-indent-level etolisp-indent-level
           c-basic-offset etolisp-indent-level)
     (c-set-offset 'innamespace 0)
-    (c-set-offset 'arglist-intro 0)
+    (c-set-offset 'arglist-intro etolisp-indent-level)
     (c-set-offset 'arglist-close 0)
     (c-set-offset 'inline-open 0)
     (c-set-offset 'statement-cont 0)
     (c-set-offset 'topmost-intro 0)
-    (c-set-offset 'topmost-intro-cont etolisp-indent-level)
+    (c-set-offset 'topmost-intro-cont 0)
     (c-set-offset 'innamespace etolisp-indent-level)))
 
 ;;-----------------------------------------------------------------------------
@@ -166,9 +174,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (scss-mode php-mode go-mode csharp-mode yaml-mode auto-complete)))
- '(safe-local-variable-values (quote ((encoding . utf-8)))))
+   '(scss-mode php-mode go-mode csharp-mode yaml-mode auto-complete))
+ '(safe-local-variable-values '((encoding . utf-8))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -180,12 +187,12 @@
  '(buffer-menu-buffer ((t nil)))
  '(comint-highlight-input ((t nil)))
  '(compilation-error ((t (:inherit error :weight normal))))
- '(compilation-info ((((class color) (min-colors 88) (background dark)) (:foreground "OliveDrab1"))))
+ '(compilation-info ((((class color) (min-colors 88) (background dark)) (:foreground "YellowGreen"))))
  '(compilation-warning ((((class color) (min-colors 16)) (:foreground "Orange"))))
  '(custom-group-tag ((((class color) (background dark)) (:foreground "SteelBlue" :height 1.2))))
  '(custom-variable-button ((t (:underline t))))
  '(error ((t (:foreground "Pink"))))
- '(font-lock-comment-face ((t (:foreground "lawn green"))))
+ '(font-lock-comment-face ((t (:foreground "DarkOliveGreen3"))))
  '(font-lock-keyword-face ((t (:foreground "#6495ED"))))
  '(font-lock-preprocessor-face ((t (:foreground "#FFA07A"))))
  '(font-lock-string-face ((t (:foreground "#8B7E66"))))
