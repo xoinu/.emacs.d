@@ -1,0 +1,8 @@
+auto-save-list/
+*.orig
+auto-complete-dict/
+elpa/
+*.elc
+tutorial/
+url/
+ac-comphist.dat
