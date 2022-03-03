@@ -58,8 +58,7 @@
 ;; Window system specific settings
 ;;-----------------------------------------------------------------------------
 (when window-system
-  (setq initial-frame-alist
-        '((top . 0) (left . 0) (width . 164) (height . 55)))
+  (setq initial-frame-alist        '((top . 0) (left . 0) (width . 164) (height . 56)))
   (set-background-color "#1E1E1E")
   (set-foreground-color "#D4D4D4")
   (set-cursor-color "white")
@@ -181,7 +180,7 @@
  '(buffer-menu-buffer ((t nil)))
  '(comint-highlight-input ((t nil)))
  '(compilation-error ((t (:inherit error :weight normal))))
- '(compilation-info ((((class color) (min-colors 88) (background dark)) (:foreground "GreenYellow"))))
+ '(compilation-info ((((class color) (min-colors 88) (background dark)) (:foreground "OliveDrab1"))))
  '(compilation-warning ((((class color) (min-colors 16)) (:foreground "Orange"))))
  '(custom-group-tag ((((class color) (background dark)) (:foreground "SteelBlue" :height 1.2))))
  '(custom-variable-button ((t (:underline t))))
