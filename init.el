@@ -9,9 +9,8 @@
 ;; - powershell
 ;; - yaml-mode
 ;;-----------------------------------------------------------------------------
-(package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
+(package-initialize)
 ;;-----------------------------------------------------------------------------
 ;; General settings
 ;;-----------------------------------------------------------------------------
@@ -22,7 +21,6 @@
               scroll-step 1
               show-trailing-whitespace t
               tab-width 4
-              time-stamp-active t
               truncate-lines t
               vc-make-backup-files nil
               visible-bell t)
@@ -30,7 +28,9 @@
 (line-number-mode t)
 (column-number-mode t)
 
+;;
 ;; Disable show-trailing-whitespace as it is found useless
+;;
 (let ((dont-show-trailing-whitespace (lambda () (setq show-trailing-whitespace nil))))
   (add-hook 'calendar-mode-hook dont-show-trailing-whitespace)
   (add-hook 'buffer-menu-mode-hook dont-show-trailing-whitespace))
@@ -40,18 +40,12 @@
   (ac-config-default)
   (global-auto-complete-mode))
 
-
-
-(when (require 'lsp-mode)
+(use-package lsp-mode
+  :config
   (add-hook 'go-mode-hook #'lsp-deferred)
   (add-hook 'go-mode-hook (lambda ()
                             (add-hook 'before-save-hook #'lsp-format-buffer t t)
                             (add-hook 'before-save-hook #'lsp-organize-imports t t))))
-
-(if (fboundp #'time-stamp)
-    (progn
-      (add-hook 'write-file-hooks #'time-stamp)
-      (setq-default time-stamp-active t)))
 
 ;;-----------------------------------------------------------------------------
 ;; Window system specific settings
@@ -61,14 +55,13 @@
   (setq initial-frame-alist '((top . 0) (left . 0) (width . 164) (height . 56)))
   (set-background-color "#1E1E1E")
   (set-foreground-color "#D4D4D4")
-  (set-cursor-color "white")
   ;; NTEmacs
   (when (eq window-system 'w32)
     (add-to-list 'default-frame-alist
-                 '(font . "Consolas-11"))))
-;; '(font . "Cascadia Code-10"))))
+                 '(font . "Consolas-11")))) ; '(font . "Cascadia Code-10"))))
+
 ;;-----------------------------------------------------------------------------
-;; org-mode
+;; org-mode (built-in)
 ;;-----------------------------------------------------------------------------
 (setq org-agenda-files '("~/todo.org"))
 (setq org-log-done 'time)
@@ -77,8 +70,6 @@
 ;;-----------------------------------------------------------------------------
 ;; C/C++
 ;;-----------------------------------------------------------------------------
-(autoload 'c++-mode "cc-mode" "C++ Editing Mode" t)
-(autoload 'c-mode   "cc-mode" "C Editing Mode" t)
 (add-hook 'c-mode-common-hook
           (lambda ()
             (c-set-style "K&R")
@@ -159,6 +150,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(frame-background-mode 'dark)
  '(menu-bar-mode nil)
  '(package-selected-packages
    '(use-package lsp-mode typescript-mode powershell scss-mode php-mode go-mode yaml-mode auto-complete))
@@ -181,6 +173,7 @@
  '(custom-group-tag ((((class color) (background dark)) (:foreground "SteelBlue" :height 1.2))))
  '(custom-variable-button ((t (:underline t))))
  '(error ((t (:foreground "Pink"))))
+ '(fixed-pitch ((t (:family "Consolas"))))
  '(font-lock-comment-face ((t (:foreground "OliveDrab1"))))
  '(font-lock-keyword-face ((t (:foreground "#6495ED"))))
  '(font-lock-preprocessor-face ((t (:foreground "#FFA07A"))))
