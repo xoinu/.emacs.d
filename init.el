@@ -1,72 +1,64 @@
 ;; -*- no-byte-compile: t -*-
 ;;-----------------------------------------------------------------------------
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
-;;-----------------------------------------------------------------------------
-(package-initialize)
-
-;;-----------------------------------------------------------------------------
 ;; Recommended packages
 ;; - auto-complete
-;; - csharp-mode
 ;; - go-mode
+;; - lsp-mode
+;; - lsp-ui
 ;; - php-mode
+;; - powershell
 ;; - yaml-mode
 ;;-----------------------------------------------------------------------------
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-
-;;-----------------------------------------------------------------------------
-;; org-mode
-;;-----------------------------------------------------------------------------
-(setq org-agenda-files '("~/todo.org"))
-(setq org-log-done 'time)
-(global-set-key (kbd "C-c a") 'org-agenda)
-
-;;-----------------------------------------------------------------------------
-;; Load path
-;;-----------------------------------------------------------------------------
-(let ((my-site-lisp (expand-file-name "~/.emacs.d/site-lisp")))
-  (when (file-directory-p my-site-lisp)
-    (add-to-list 'load-path my-site-lisp)
-    (when (fboundp 'normal-top-level-add-subdirs-to-load-path)
-      (cd my-site-lisp)
-      (normal-top-level-add-subdirs-to-load-path)
-      (cd "~")
-      (byte-recompile-directory my-site-lisp))))
+(package-initialize)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 ;;-----------------------------------------------------------------------------
 ;; General settings
 ;;-----------------------------------------------------------------------------
-(setq-default make-backup-files nil)
-(setq-default vc-make-backup-files nil)
-(setq-default visible-bell t)
-(setq-default scroll-step 1)
-(setq-default truncate-lines t)
-(setq-default tab-width 4)
-(setq-default indent-tabs-mode nil)
-(setq-default indicate-empty-lines t)
-(setq-default show-trailing-whitespace t)
+(setq-default cursor-type '(bar . 2)
+              indent-tabs-mode nil
+              indicate-empty-lines t
+              make-backup-files nil
+              scroll-step 1
+              show-trailing-whitespace t
+              tab-width 4
+              time-stamp-active t
+              truncate-lines t
+              vc-make-backup-files nil
+              visible-bell t)
 
-(menu-bar-mode 0)
-(if (fboundp 'tool-bar-mode) (tool-bar-mode 0))
-(line-number-mode 1)
-(column-number-mode 1)
+(line-number-mode t)
+(column-number-mode t)
 
-(when (require 'time-stamp nil t)
-  (add-hook 'write-file-hooks 'time-stamp)
-  (setq-default time-stamp-active t))
+;; Disable show-trailing-whitespace as it is found useless
+(let ((dont-show-trailing-whitespace (lambda () (setq show-trailing-whitespace nil))))
+  (add-hook 'calendar-mode-hook dont-show-trailing-whitespace)
+  (add-hook 'buffer-menu-mode-hook dont-show-trailing-whitespace))
 
-(if (fboundp 'ac-config-default) (ac-config-default))
+(use-package auto-complete
+  :config
+  (ac-config-default)
+  (global-auto-complete-mode))
+
+
+
+(when (require 'lsp-mode)
+  (add-hook 'go-mode-hook #'lsp-deferred)
+  (add-hook 'go-mode-hook (lambda ()
+                            (add-hook 'before-save-hook #'lsp-format-buffer t t)
+                            (add-hook 'before-save-hook #'lsp-organize-imports t t))))
+
+(if (fboundp #'time-stamp)
+    (progn
+      (add-hook 'write-file-hooks #'time-stamp)
+      (setq-default time-stamp-active t)))
 
 ;;-----------------------------------------------------------------------------
 ;; Window system specific settings
 ;;-----------------------------------------------------------------------------
 (when window-system
-  (global-unset-key (kbd "C-z")) ; I don't like accidentally minimizing the window by mistype; so let it disabled.
-  (setq initial-frame-alist
-        '((top . 0) (left . 0) (width . 164) (height . 56)))
+  (global-set-key (kbd "C-z") 'undo)
+  (setq initial-frame-alist '((top . 0) (left . 0) (width . 164) (height . 56)))
   (set-background-color "#1E1E1E")
   (set-foreground-color "#D4D4D4")
   (set-cursor-color "white")
@@ -74,6 +66,13 @@
   (when (eq window-system 'w32)
     (add-to-list 'default-frame-alist
                  '(font . "Consolas-11"))))
+;; '(font . "Cascadia Code-10"))))
+;;-----------------------------------------------------------------------------
+;; org-mode
+;;-----------------------------------------------------------------------------
+(setq org-agenda-files '("~/todo.org"))
+(setq org-log-done 'time)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 ;;-----------------------------------------------------------------------------
 ;; C/C++
@@ -121,6 +120,10 @@
           (lambda ()
             (setq sh-basic-offset 2
                   sh-indentation 2)))
+(add-hook 'go-mode-hook
+          (lambda ()
+            (setq-local indent-tabs-mode t)
+            (setq-local tab-width 4)))
 
 ;;-----------------------------------------------------------------------------
 ;; CSS
@@ -139,7 +142,7 @@
 ;; XML
 ;;-----------------------------------------------------------------------------
 (add-to-list 'auto-mode-alist '("\\.\\(xml\\|cfx\\|cdx\\)$" . xml-mode))
-(add-to-list 'auto-mode-alist '("\\(cdx\\|cfx\\|qax\\|enx\\)$" . xml-mode))
+(add-to-list 'auto-mode-alist '("\\(qax\\|enx\\)$" . xml-mode))
 
 ;;-----------------------------------------------------------------------------
 ;; Ruby
@@ -149,23 +152,6 @@
 (add-to-list 'auto-mode-alist '("\\.\\(rb\\|rbw\\|gemspec\\)$" . ruby-mode))
 
 ;;----------------------------------------------------------------------------
-;; Ispell
-;;----------------------------------------------------------------------------
-;; (eval-after-load "ispell"
-;;   '(setq ispell-skip-region-alist (cons '("[^\000-\377]")
-;;                                         ispell-skip-region-alist)))
-;; (setq ispell-dictionary "US-xlg")
-;; (setq ispell-local-dictionary-alist
-;;       '((nil                            ; default (english.aff)
-;;          "[A-Za-z]" "[^A-Za-z]" "[']" nil ("-B") nil iso-8859-1)
-;;         ("UK-xlg"                       ; english large version
-;;          "[A-Za-z]" "[^A-Za-z]" "[']" nil ("-B" "-d" "UK-xlg") nil iso-8859-1)
-;;         ("US-xlg"                       ; american large version
-;;          "[A-Za-z]" "[^A-Za-z]" "[']" nil ("-B" "-d" "US-xlg") nil iso-8859-1)
-;;         )
-;;       )
-
-;;----------------------------------------------------------------------------
 ;; M-x list-faces-display
 ;;----------------------------------------------------------------------------
 (custom-set-variables
@@ -173,9 +159,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(menu-bar-mode nil)
  '(package-selected-packages
-   '(scss-mode php-mode go-mode csharp-mode yaml-mode auto-complete))
- '(safe-local-variable-values '((encoding . utf-8))))
+   '(use-package lsp-mode typescript-mode powershell scss-mode php-mode go-mode yaml-mode auto-complete))
+ '(safe-local-variable-values '((encoding . utf-8)))
+ '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -189,10 +177,11 @@
  '(compilation-error ((t (:inherit error :weight normal))))
  '(compilation-info ((((class color) (min-colors 88) (background dark)) (:foreground "YellowGreen"))))
  '(compilation-warning ((((class color) (min-colors 16)) (:foreground "Orange"))))
+ '(cursor ((t (:background "PaleTurquoise3"))))
  '(custom-group-tag ((((class color) (background dark)) (:foreground "SteelBlue" :height 1.2))))
  '(custom-variable-button ((t (:underline t))))
  '(error ((t (:foreground "Pink"))))
- '(font-lock-comment-face ((t (:foreground "DarkOliveGreen3"))))
+ '(font-lock-comment-face ((t (:foreground "OliveDrab1"))))
  '(font-lock-keyword-face ((t (:foreground "#6495ED"))))
  '(font-lock-preprocessor-face ((t (:foreground "#FFA07A"))))
  '(font-lock-string-face ((t (:foreground "#8B7E66"))))
