@@ -1,16 +1,8 @@
 ;; -*- no-byte-compile: t -*-
 ;;-----------------------------------------------------------------------------
-;; Recommended packages
-;; - auto-complete
-;; - go-mode
-;; - lsp-mode
-;; - lsp-ui
-;; - php-mode
-;; - powershell
-;; - yaml-mode
-;;-----------------------------------------------------------------------------
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
+
 ;;-----------------------------------------------------------------------------
 ;; General settings
 ;;-----------------------------------------------------------------------------
@@ -25,6 +17,7 @@
               vc-make-backup-files nil
               visible-bell t)
 
+(add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
 (line-number-mode t)
 (column-number-mode t)
 
@@ -36,56 +29,115 @@
   (add-hook 'buffer-menu-mode-hook dont-show-trailing-whitespace))
 
 (use-package auto-complete
+  :ensure t
   :config
   (ac-config-default)
   (global-auto-complete-mode))
+;; (use-package company
+;;   :ensure t
+;;   :config
+;;   (global-company-mode))
 
 (use-package lsp-mode
+  :ensure t
+  :custom (lsp-rust-server 'rls)
+  :hook
+  (rust-mode . lsp)
+  (rust-mode . (lambda () (lsp-format-buffer)))
+  (go-mode . lsp-deferred)
+  (go-mode . (lambda ()
+               (add-hook 'before-save-hook #'lsp-format-buffer t t)
+               (add-hook 'before-save-hook #'lsp-organize-imports t t))))
+
+(use-package lsp-ui :ensure t)
+(use-package php-mode :ensure t)
+(use-package powershell :ensure t)
+(use-package yaml-mode :ensure t)
+(use-package go-mode
+  :ensure t
+  :init
+  (setq indent-tabs-mode t)
+  (setq tab-width 4))
+
+(use-package rust-mode
+  :ensure t
+  :custom rust-format-on-save t)
+
+(use-package cargo
+  :ensure t
+  :hook (rust-mode . cargo-minor-mode))
+
+(use-package scss-mode
+  :ensure t
+  :mode "\\.css\\'"
   :config
-  (add-hook 'go-mode-hook #'lsp-deferred)
-  (add-hook 'go-mode-hook (lambda ()
-                            (add-hook 'before-save-hook #'lsp-format-buffer t t)
-                            (add-hook 'before-save-hook #'lsp-organize-imports t t))))
+  (setq css-indent-offset 2))
+
+(use-package sh-script
+  :config
+  (setq sh-basic-offset 2
+        sh-indentation 2))
+
+(use-package electric
+  :hook
+  (js-mode . electric-indent-mode)
+  (js-mode . electric-layout-mode))
+
+(use-package js
+  :custom (js-indent-level 2))
+
+(use-package cc-mode
+  :mode "\\.\\(C\\|c\\|cc\\|cpp\\|cxx\\|e\\|h\\|hh\\|hpp\\|hxx\\)\\'"
+  :hook
+  (c++-mode . cc-mode)
+  (c++-mode . (lambda ()
+  (c-set-style "K&R")
+  (c-set-offset 'arglist-intro tab-width)
+  (c-set-offset 'arglist-close 0)
+  (c-set-offset 'inline-open 0)
+  (c-set-offset 'member-init-intro tab-width)
+  (c-set-offset 'member-init-cont -2)
+  (c-set-offset 'statement-cont tab-width)
+  (c-set-offset 'topmost-intro 0)
+  (c-set-offset 'topmost-intro-cont 0)
+  (c-set-offset 'innamespace tab-width)))
+  :config
+  (setq indent-tabs-mode nil
+        c-basic-offset tab-width))
+
+(use-package ruby-mode
+  :mode "\\.\\(rb\\|rbw\\|gemspec\\)\\'"
+  :interpreter "ruby")
+
+(use-package loaddefs
+  :mode
+  ("\\.\\(xml\\|cfx\\|cdx\\)\\'" . xml-mode)
+  ("\\(qax\\|enx\\)\\'" . xml-mode))
+
+(use-package org-agenda
+  :config
+  (setq org-agenda-files '("~/todo.org"))
+  (setq org-log-done 'time)
+  (global-set-key (kbd "C-c a") 'org-agenda))
 
 ;;-----------------------------------------------------------------------------
 ;; Window system specific settings
 ;;-----------------------------------------------------------------------------
 (when window-system
   (global-set-key (kbd "C-z") 'undo)
-  (setq initial-frame-alist '((top . 0) (left . 0) (width . 164) (height . 56)))
+  (when (= (x-display-pixel-height) 1080)
+    (setq initial-frame-alist '((top . 0) (left . 0) (width . 164) (height . 51))))
   (set-background-color "#1E1E1E")
   (set-foreground-color "#D4D4D4")
   ;; NTEmacs
   (when (eq window-system 'w32)
     (add-to-list 'default-frame-alist
-                 '(font . "Consolas-11")))) ; '(font . "Cascadia Code-10"))))
-
-;;-----------------------------------------------------------------------------
-;; org-mode (built-in)
-;;-----------------------------------------------------------------------------
-(setq org-agenda-files '("~/todo.org"))
-(setq org-log-done 'time)
-(global-set-key (kbd "C-c a") 'org-agenda)
+                 ;;'(font . "Consolas-11"))))
+                 '(font . "Cascadia Code SemiLight-11"))))
 
 ;;-----------------------------------------------------------------------------
 ;; C/C++
 ;;-----------------------------------------------------------------------------
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (c-set-style "K&R")
-            (setq indent-tabs-mode nil
-                  c-basic-offset tab-width)
-            (c-set-offset 'arglist-intro tab-width)
-            (c-set-offset 'arglist-close 0)
-            (c-set-offset 'inline-open 0)
-            (c-set-offset 'member-init-intro tab-width)
-            (c-set-offset 'member-init-cont -2)
-            (c-set-offset 'statement-cont tab-width)
-            (c-set-offset 'topmost-intro 0)
-            (c-set-offset 'topmost-intro-cont 0)
-            (c-set-offset 'innamespace tab-width)))
-
-(add-to-list 'auto-mode-alist '("\\.\\(C\\|c\\|cc\\|cpp\\|cxx\\|e\\|h\\|hh\\|hpp\\|hxx\\)$" . c++-mode))
 (defun etolisp-c++-mode ()
   "C++ mode with adjusted defaults for use with the EtoLisp development."
   (interactive)
@@ -104,44 +156,6 @@
     (c-set-offset 'topmost-intro-cont 0)
     (c-set-offset 'innamespace etolisp-indent-level)))
 
-;;-----------------------------------------------------------------------------
-;; Shell Script
-;;-----------------------------------------------------------------------------
-(add-hook 'sh-mode-hook
-          (lambda ()
-            (setq sh-basic-offset 2
-                  sh-indentation 2)))
-(add-hook 'go-mode-hook
-          (lambda ()
-            (setq-local indent-tabs-mode t)
-            (setq-local tab-width 4)))
-
-;;-----------------------------------------------------------------------------
-;; CSS
-;;-----------------------------------------------------------------------------
-(add-to-list 'auto-mode-alist '("\\.css\\'" . scss-mode))
-(add-hook 'scss-mode-hook
-          (lambda ()
-            (setq css-indent-offset 2)))
-
-;;-----------------------------------------------------------------------------
-;; JavaScript
-;;-----------------------------------------------------------------------------
-(add-hook 'js-mode-hook (lambda () (setq js-indent-level 2)))
-
-;;-----------------------------------------------------------------------------
-;; XML
-;;-----------------------------------------------------------------------------
-(add-to-list 'auto-mode-alist '("\\.\\(xml\\|cfx\\|cdx\\)$" . xml-mode))
-(add-to-list 'auto-mode-alist '("\\(qax\\|enx\\)$" . xml-mode))
-
-;;-----------------------------------------------------------------------------
-;; Ruby
-;;-----------------------------------------------------------------------------
-(autoload 'ruby-mode "ruby-mode" "Mode for editing ruby source files" t)
-(add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.\\(rb\\|rbw\\|gemspec\\)$" . ruby-mode))
-
 ;;----------------------------------------------------------------------------
 ;; M-x list-faces-display
 ;;----------------------------------------------------------------------------
@@ -153,7 +167,7 @@
  '(frame-background-mode 'dark)
  '(menu-bar-mode nil)
  '(package-selected-packages
-   '(use-package lsp-mode typescript-mode powershell scss-mode php-mode go-mode yaml-mode auto-complete))
+   '(auto-complete lsp-ui cargo rust-mode use-package lsp-mode typescript-mode powershell scss-mode php-mode go-mode yaml-mode))
  '(safe-local-variable-values '((encoding . utf-8)))
  '(tool-bar-mode nil))
 (custom-set-faces
